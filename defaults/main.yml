@@ -1,0 +1,28 @@
+---
+# defaults file for fabos.molecule_openstack
+default_ssh_port: 22
+
+os_username: "{{ lookup('env', 'OS_USERNAME') }}"
+
+os_default_prefix: "ansible-dev-molecule-{{ os_username | split('@') | first | replace('.', '-') }}{{ galaxy_info | default('') }}-"
+
+os_default_flavor_name: m1.medium
+
+os_default_network_name: private
+
+os_security_group_name: ansible-dev-molecule
+os_security_group_description: "Security group for testing Molecule"
+os_security_group_rules:
+  - proto: tcp
+    port: "{{ ssh_port | default(default_ssh_port) }}"
+    cidr: '0.0.0.0/0'
+  - proto: icmp
+    port: -1
+    cidr: '0.0.0.0/0'
+  - ethertype: IPv4
+    group: "{{ security_group.security_group.id }}"
+  - ethertype: IPv6
+    group: "{{ security_group.security_group.id }}"
+
+os_key_pair_name: "{{ os_default_prefix }}key-pair"
+local_key_pair_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"

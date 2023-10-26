@@ -1,0 +1,15 @@
+---
+- name: Stat galaxy.yml file
+  ansible.builtin.stat:
+    path: "{{ molecule_scenario_directory }}/../../../../galaxy.yml"
+  register: galaxy_file
+
+- name: Lookup content of galaxy.yml file
+  when: galaxy_file.stat.exists
+  ansible.builtin.set_fact:
+    galaxy_yml: "{{ lookup('file', molecule_scenario_directory+'/../../../../galaxy.yml') | from_yaml }}"
+
+- name: Set galaxy_info
+  when: galaxy_yml is defined
+  ansible.builtin.set_fact:
+    galaxy_info: "-{{ galaxy_yml.namespace+'-'+galaxy_yml.name }}"

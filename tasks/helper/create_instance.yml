@@ -1,0 +1,23 @@
+- name: "Get Info of '{{ item.name }}' instance"
+  openstack.cloud.server_info:
+    name: "{{ item.name }}"
+  register: info_response
+  failed_when: false
+
+- name: Create molecule instance
+  when: info_response.servers | length == 0
+  openstack.cloud.server:
+    name: "{{ os_default_prefix }}{{ item.name }}"
+    image: "{{ item.image_name }}"
+    flavor: "{{ item.flavor | default(os_default_flavor_name) }}"
+    security_groups: "{{ os_security_group_name }}"
+    key_name: "{{ os_key_pair_name }}"
+    network: "{{ item.network | default(os_default_network_name) }}"
+    floating_ip_pools: "{{ item.fip_pool | default(omit) }}"
+    meta:
+      ssh_user: "{{ item.ssh_user }}"
+      owner: "{{ os_username | default('') }}"
+      ansible_role: "<todo>"
+  register: server
+  async: 360
+  poll: 0

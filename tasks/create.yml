@@ -1,0 +1,90 @@
+---
+- name: Get galaxy info-based prefix
+  ansible.builtin.include_tasks: helper/lookup_galaxy_info.yml
+
+- name: Create security group
+  openstack.cloud.security_group:
+    name: "{{ os_security_group_name }}"
+    description: "{{ os_security_group_description }}"
+  register: security_group
+
+- name: Create security group rules
+  openstack.cloud.security_group_rule:
+    security_group: "{{ os_security_group_name }}"
+    protocol: "{{ item.proto | default(omit) }}"
+    port_range_min: "{{ item.port | default(omit) }}"
+    port_range_max: "{{ item.port | default(omit) }}"
+    remote_ip_prefix: "{{ item.cidr | default(omit) }}"
+    remote_group: "{{ item.group | default(omit) }}"
+    ethertype: "{{ item.ethertype | default(omit) }}"
+  loop: "{{ os_security_group_rules | flatten(levels=1) }}"
+
+- name: Test for presence of local key pair
+  ansible.builtin.stat:
+    path: "{{ local_key_pair_path }}"
+  register: key_pair_local
+
+- name: Delete remote key pair
+  openstack.cloud.keypair:
+    name: "{{ os_key_pair_name }}"
+    state: absent
+  when: not key_pair_local.stat.exists
+
+- name: Create key pair
+  openstack.cloud.keypair:
+    name: "{{ os_key_pair_name }}"
+  register: key_pair_response
+
+- ansible.builtin.set_fact:
+    key_pair: "{{ key_pair_response.keypair }}"
+
+- name: Persist the key pair
+  ansible.builtin.copy:
+    dest: "{{ local_key_pair_path }}"
+    content: "{{ key_pair.private_key }}"
+    mode: 0600
+  when: key_pair_response.changed
+
+- name: Create molecule instance(s)
+  ansible.builtin.include_tasks: helper/create_instance.yml
+  loop: "{{ molecule_yml.platforms | flatten(levels=1) }}"
+
+- name: Collect instance info
+  openstack.cloud.server_info:
+    name: "{{ os_default_prefix }}{{ item.name }}"
+  loop: "{{ molecule_yml.platforms | flatten(levels=1) }}"
+  register: instance_info
+
+- name: Flatten instance_info
+  ansible.builtin.set_fact:
+    server_info: "{{ server_info | default([]) + item.servers }}"
+  loop: "{{ instance_info.results }}"
+
+# Mandatory configuration for Molecule to function.
+
+- name: Populate instance config dict
+  ansible.builtin.set_fact:
+    instance_conf_dict: {
+      'instance': "{{ item.name }}",
+      'instance_id': "{{ item.id }}",
+      'address': "{{ item.access_ipv4 }}",
+      'user': "{{ item.metadata.ssh_user }}",
+      'port': "{{ item.ssh_port | default(default_ssh_port) }}",
+      'identity_file': "{{ local_key_pair_path }}", }
+  loop: "{{ server_info | flatten(levels=1) }}"
+  register: instance_config_dict
+
+- name: Convert instance config dict to a list
+  ansible.builtin.set_fact:
+    instance_conf: "{{ instance_config_dict.results | map(attribute='ansible_facts.instance_conf_dict') | list }}"
+
+- name: Dump instance config
+  ansible.builtin.copy:
+    content: "{{ instance_conf | to_json | from_json | to_yaml }}"
+    dest: "{{ molecule_instance_config }}"
+
+# TODO: add hard reboot if instance does not come up
+
+- name: Wait for SSH and do reboot if required
+  ansible.builtin.include_tasks: helper/wait_for_ssh.yml
+  loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"

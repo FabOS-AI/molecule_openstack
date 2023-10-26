@@ -1,0 +1,12 @@
+---
+- name: "Wait for SSH of {{ item.instance }}"
+  ansible.builtin.wait_for:
+    port: "{{ item.port }}"
+    host: "{{ item.address }}"
+    timeout: 20
+  register: initial_wait
+  ignore_errors: true
+
+- name: "Do hard-reboot till available {{ item.instance }}"
+  when: initial_wait.failed
+  ansible.builtin.include_tasks: hard_reboot_for_avail.yml

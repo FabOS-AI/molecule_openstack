@@ -1,0 +1,16 @@
+---
+- name: "Do hard reboot on {{ item.instance }}"
+  ansible.builtin.shell: "openstack server reboot --hard {{ item.instance_id }}"
+  register: reboot_result
+
+- name: Wait for SSH
+  ansible.builtin.wait_for:
+    port: "{{ item.port }}"
+    host: "{{ item.address }}"
+    timeout: 30
+  register: wait
+  ignore_errors: true
+
+- name: Redo hard-reboot if ssh not available
+  when: wait.failed
+  ansible.builtin.include_tasks: hard_reboot_for_avail.yml
