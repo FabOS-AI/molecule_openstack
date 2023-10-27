@@ -71,12 +71,9 @@
       'instance': "{{ item.metadata.instance }}",
       'instance_id': "{{ item.id }}",
       'address': "{{ item.access_ipv4 }}",
-#      'user': "{{ item.metadata.ssh_user }}",
-      'user': "ansible",
-      'password': "password",
+      'user': "{{ item.metadata.ssh_user }}",
       'port': "{{ item.ssh_port | default(default_ssh_port) }}",
-      'identity_file': "", }
-#      'identity_file': "{{ local_key_pair_path }}", }
+      'identity_file': "{{ local_key_pair_path }}", }
   loop: "{{ server_info }}"
   register: instance_config_dict
 
