@@ -1,5 +1,5 @@
 ---
-- name: Collect instance info
+- name: "Collect instance info of {{ item.name }}"
   openstack.cloud.server_info:
     name: "{{ os_default_prefix }}{{ item.name }}"
   register: info
