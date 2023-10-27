@@ -8,6 +8,7 @@
     port: "{{ item.port }}"
     host: "{{ item.address }}"
     timeout: 30
+    search_regex: OpenSSH
   register: wait
   ignore_errors: true
 
