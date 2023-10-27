@@ -89,3 +89,7 @@
 - name: Wait for SSH and do reboot if required
   ansible.builtin.include_tasks: helper/wait_for_ssh.yml
   loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
+
+- name: Test connection
+  ansible.builtin.include_tasks: helper/test_ssh_connection.yml
+  loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"

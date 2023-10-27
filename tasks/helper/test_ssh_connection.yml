@@ -1,0 +1,14 @@
+---
+- name: Test connection
+  ansible.builtin.ping:
+  delegate_to: "{{ item.address }}"
+  vars:
+    ansible_user: "{{ item.user }}"
+    ansible_private_key_file: "{{ item.identity_file }}"
+  register: ping
+  ignore_errors: true
+  ignore_unreachable: true
+
+- name: Redo test connection
+  when: ping.unreachable is defined
+  ansible.builtin.include_tasks: helper/test_ssh_connection.yml
