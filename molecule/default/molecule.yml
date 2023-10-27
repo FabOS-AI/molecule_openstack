@@ -7,33 +7,36 @@ platforms:
 # UBUNTU
   - name: ubuntu1804
     image_name: ansible-dev-ubuntu-18-04
-    ssh_user: ubuntu
     groups: ['ssh']
 
   - name: ubuntu2004
     image_name: ansible-dev-ubuntu-20-04
-    ssh_user: ubuntu
     groups: ['ssh']
 
   - name: ubuntu2204
     image_name: ansible-dev-ubuntu-22-04
-    ssh_user: ubuntu
     groups: ['ssh']
 
-# CENTOS
+## CENTOS
   - name: centos7
     image_name: ansible-dev-centos-7
-    ssh_user: centos
     groups: ['ssh']
 
   - name: centos8
     image_name: ansible-dev-centos-8-stream
-    ssh_user: centos
     groups: ['ssh']
 
   - name: centos9
     image_name: ansible-dev-centos-9-stream
-    ssh_user: cloud-user
+    groups: ['ssh']
+
+# DEBIAN
+  - name: debian11
+    image_name: ansible-dev-debian-11
+    groups: ['ssh']
+
+  - name: debian12
+    image_name: ansible-dev-debian-12
     groups: ['ssh']
 provisioner:
   name: ansible
