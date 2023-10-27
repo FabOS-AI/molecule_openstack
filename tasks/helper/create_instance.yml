@@ -4,7 +4,7 @@
   register: info_response
   failed_when: false
 
-- name: Create molecule instance
+- name: "Create molecule instance '{{ item.name }}'"
   when: info_response.servers | length == 0
   openstack.cloud.server:
     name: "{{ os_default_prefix }}{{ item.name }}"
@@ -16,7 +16,7 @@
     floating_ip_pools: "{{ item.fip_pool | default(omit) }}"
     meta:
       instance: "{{ item.name }}"
-      ssh_user: "{{ item.ssh_user }}"
+      ssh_user: "{{ item.ssh_user | default(default_ssh_username[item.image_name]) }}"
       owner: "{{ os_username | default('') }}"
       ansible_role: "{{ galaxy_info[1:] | default('') }}"
   register: server
