@@ -11,4 +11,4 @@
 
 - name: Redo test connection
   when: ping.unreachable is defined
-  ansible.builtin.include_tasks: helper/test_ssh_connection.yml
+  ansible.builtin.include_tasks: test_ssh_connection.yml
