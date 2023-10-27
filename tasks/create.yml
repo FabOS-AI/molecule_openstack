@@ -91,5 +91,5 @@
   loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
 
 - name: Test connection
-  ansible.builtin.include_tasks: helper/test_ssh_connection.yml
+  ansible.builtin.include_tasks: test_ssh_connection.yml
   loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
