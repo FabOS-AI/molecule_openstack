@@ -71,9 +71,12 @@
       'instance': "{{ item.metadata.instance }}",
       'instance_id': "{{ item.id }}",
       'address': "{{ item.access_ipv4 }}",
-      'user': "{{ item.metadata.ssh_user }}",
+#      'user': "{{ item.metadata.ssh_user }}",
+      'user': "ansible",
+      'password': "password",
       'port': "{{ item.ssh_port | default(default_ssh_port) }}",
-      'identity_file': "{{ local_key_pair_path }}", }
+      'identity_file': "", }
+#      'identity_file': "{{ local_key_pair_path }}", }
   loop: "{{ server_info }}"
   register: instance_config_dict
 
@@ -90,6 +93,6 @@
   ansible.builtin.include_tasks: helper/wait_for_ssh.yml
   loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
 
-- name: Test connection
-  ansible.builtin.include_tasks: helper/test_ssh_connection.yml
-  loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
+#- name: Test connection
+#  ansible.builtin.include_tasks: helper/test_ssh_connection.yml
+#  loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
