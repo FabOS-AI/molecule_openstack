@@ -15,9 +15,10 @@
     network: "{{ item.network | default(os_default_network_name) }}"
     floating_ip_pools: "{{ item.fip_pool | default(omit) }}"
     meta:
+      instance: "{{ item.name }}"
       ssh_user: "{{ item.ssh_user }}"
       owner: "{{ os_username | default('') }}"
-      ansible_role: "<todo>"
+      ansible_role: "{{ galaxy_info[1:] | default('') }}"
   register: server
   async: 360
   poll: 0
