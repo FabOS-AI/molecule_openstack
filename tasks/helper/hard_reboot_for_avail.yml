@@ -7,7 +7,7 @@
   ansible.builtin.wait_for:
     port: "{{ item.port }}"
     host: "{{ item.address }}"
-    timeout: 30
+    timeout: 180
     search_regex: OpenSSH
   register: wait
   ignore_errors: true
