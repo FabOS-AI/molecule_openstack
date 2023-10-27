@@ -4,7 +4,7 @@
     port: "{{ item.port }}"
     host: "{{ item.address }}"
     search_regex: OpenSSH
-    timeout: 20
+    timeout: "{{ default_initial_ssh_wait_timeout }}"
   register: initial_wait
   ignore_errors: true
 
