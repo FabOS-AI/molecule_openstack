@@ -33,5 +33,6 @@ os_security_group_rules:
     group: "{{ security_group.security_group.id }}"
 
 os_key_pair_name: "{{ os_default_prefix }}key-pair"
-local_key_pair_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"
+#local_key_pair_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"
+local_key_pair_path: "~/.cache/molecule/ssh_key"
 
