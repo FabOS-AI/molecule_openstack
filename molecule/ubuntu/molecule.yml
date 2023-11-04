@@ -26,5 +26,9 @@ platforms:
 #    image_name: ansible-dev-ubuntu-22-04
 provisioner:
   name: ansible
+  playbooks:
+    destroy: ../default/destroy.yml
+    converge: ../default/converge.yml
+    verify: ../default/verify.yml
 verifier:
   name: ansible
