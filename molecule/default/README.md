@@ -1,3 +1,9 @@
+Make sure to remove pre-installed molecule_openstack role:
+
+````shell
+ansible-galaxy role remove molecule_openstack
+````
+
 Run the following before doing debug with molecule:
 
 ````shell
