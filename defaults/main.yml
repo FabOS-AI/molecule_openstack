@@ -13,6 +13,7 @@ default_ssh_username:
 default_initial_ssh_wait_timeout: 30
 default_ssh_wait_timeout: 180
 
+# TODO: Take application name if username not set
 os_username: "{{ lookup('env', 'OS_USERNAME') }}"
 os_default_prefix: "ansible-dev-molecule-{{ os_username | split('@') | first | replace('.', '-') }}{{ galaxy_info | default('') }}-"
 os_default_flavor_name: m1.medium
@@ -36,7 +37,7 @@ os_security_group_rules:
     group: "{{ security_group.security_group.id }}"
 
 os_key_pair_base_name: "{{ os_default_prefix }}key-pair"
-os_key_pair_name: "{{ os_key_pair_base_name }}-{{ (key_pair_local.fingerprint | split(':') | last)[:8] }}"
+os_key_pair_name: "{{ os_key_pair_base_name }}-{{ (key_pair_local.fingerprint | split(':') | last | regex_replace('[^A-Za-z0-9]', ''))[:8] }}"
 #local_key_pair_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"
 local_key_pair_path: "~/.cache/molecule/ssh_key"
 
