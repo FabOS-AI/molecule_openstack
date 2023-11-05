@@ -2,6 +2,11 @@
 - name: Get galaxy info-based prefix
   ansible.builtin.include_tasks: helper/lookup_galaxy_info.yml
 
+- name: Generate OpenSSH keypair
+  community.crypto.openssh_keypair:
+    path: "{{ local_key_pair_path }}"
+  register: key_pair_local
+
 - name: Create security group
   openstack.cloud.security_group:
     name: "{{ os_security_group_name }}"
@@ -19,31 +24,11 @@
     ethertype: "{{ item.ethertype | default(omit) }}"
   loop: "{{ os_security_group_rules | flatten(levels=1) }}"
 
-- name: Test for presence of local key pair
-  ansible.builtin.stat:
-    path: "{{ local_key_pair_path }}"
-  register: key_pair_local
-
-- name: Delete remote key pair
+- name: Create openstack key pair
   openstack.cloud.keypair:
     name: "{{ os_key_pair_name }}"
-    state: absent
-  when: not key_pair_local.stat.exists
-
-- name: Create key pair
-  openstack.cloud.keypair:
-    name: "{{ os_key_pair_name }}"
+    public_key: "{{ key_pair_local.public_key }}"
   register: key_pair_response
-
-- ansible.builtin.set_fact:
-    key_pair: "{{ key_pair_response.keypair }}"
-
-- name: Persist the key pair
-  ansible.builtin.copy:
-    dest: "{{ local_key_pair_path }}"
-    content: "{{ key_pair.private_key }}"
-    mode: 0600
-  when: key_pair_response.changed
 
 - name: Create molecule instance(s)
   ansible.builtin.include_tasks: helper/create_instance.yml
