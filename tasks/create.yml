@@ -24,6 +24,10 @@
     ethertype: "{{ item.ethertype | default(omit) }}"
   loop: "{{ os_security_group_rules | flatten(levels=1) }}"
 
+- name: Print keypair name
+  ansible.builtin.debug:
+    var: os_key_pair_name
+
 - name: Create openstack key pair
   openstack.cloud.keypair:
     name: "{{ os_key_pair_name }}"
