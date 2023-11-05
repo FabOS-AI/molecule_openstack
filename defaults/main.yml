@@ -35,7 +35,8 @@ os_security_group_rules:
   - ethertype: IPv6
     group: "{{ security_group.security_group.id }}"
 
-os_key_pair_name: "{{ os_default_prefix }}key-pair"
+os_key_pair_base_name: "{{ os_default_prefix }}key-pair"
+os_key_pair_name: "{{ os_key_pair_base_name }}-{{ (key_pair_local.fingerprint | split(':') | last)[:8] }}"
 #local_key_pair_path: "{{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/ssh_key"
 local_key_pair_path: "~/.cache/molecule/ssh_key"
 
