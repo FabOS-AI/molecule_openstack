@@ -22,12 +22,15 @@ os_security_group_name: ansible-dev-molecule
 os_security_group_description: "Security group for testing Molecule"
 os_security_group_rules:
   - proto: tcp
-    port: "{{ ssh_port | default(default_ssh_port) }}"
+    port_min: "{{ ssh_port | default(default_ssh_port) }}"
+    port_max: "{{ ssh_port | default(default_ssh_port) }}"
     cidr: '0.0.0.0/0'
   - proto: icmp
-    port: -1
+    port_min: -1
+    port_max: -1
     cidr: '0.0.0.0/0'
-  - ethertype: IPv4
+  - proto: any
+    ethertype: IPv4
     group: "{{ security_group.security_group.id }}"
   - ethertype: IPv6
     group: "{{ security_group.security_group.id }}"
