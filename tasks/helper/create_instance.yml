@@ -10,7 +10,9 @@
     name: "{{ os_default_prefix }}{{ item.name }}"
     image: "{{ item.image_name }}"
     flavor: "{{ item.flavor | default(os_default_flavor_name) }}"
-    security_groups: "{{ os_security_group_name }}"
+    security_groups:
+      - default
+      - "{{ os_security_group_name }}"
     key_name: "{{ os_key_pair_name }}"
     network: "{{ item.network | default(os_default_network_name) }}"
     floating_ip_pools: "{{ item.fip_pool | default(omit) }}"
