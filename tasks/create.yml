@@ -12,8 +12,8 @@
   openstack.cloud.security_group_rule:
     security_group: "{{ os_security_group_name }}"
     protocol: "{{ item.proto | default(omit) }}"
-    port_range_min: "{{ item.port | default(omit) }}"
-    port_range_max: "{{ item.port | default(omit) }}"
+    port_range_min: "{{ item.port_min | default(omit) }}"
+    port_range_max: "{{ item.port_max | default(omit) }}"
     remote_ip_prefix: "{{ item.cidr | default(omit) }}"
     remote_group: "{{ item.group | default(omit) }}"
     ethertype: "{{ item.ethertype | default(omit) }}"
