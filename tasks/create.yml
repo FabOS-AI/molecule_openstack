@@ -2,27 +2,31 @@
 - name: Get galaxy info-based prefix
   ansible.builtin.include_tasks: helper/lookup_galaxy_info.yml
 
-- name: Generate OpenSSH keypair
-  community.crypto.openssh_keypair:
-    path: "{{ local_key_pair_path }}"
-  register: key_pair_local
+- name: Create network
+  openstack.cloud.network:
+    name: "{{ os_default_int_network_name }}"
+    state: present
+    external: "false"
 
-- name: Create security group
-  openstack.cloud.security_group:
-    name: "{{ os_security_group_name }}"
-    description: "{{ os_security_group_description }}"
-  register: security_group
+- name: Create subnet in network
+  openstack.cloud.subnet:
+    name: "{{ os_default_int_subnet_name }}"
+    state: present
+    network_name: "{{ os_default_int_network_name }}"
+    cidr: "{{ os_default_int_subnet_cidr }}"
+    ip_version: 4
+    dns_nameservers: 8.8.8.8
+#    host_routes: "{{ item.network.subnet.host_routes | default(omit) }}"
+  loop: "{{ molecule_yml.platforms }}"
 
-- name: Create security group rules
-  openstack.cloud.security_group_rule:
-    security_group: "{{ os_security_group_name }}"
-    protocol: "{{ item.proto | default(omit) }}"
-    port_range_min: "{{ item.port_min | default(omit) }}"
-    port_range_max: "{{ item.port_max | default(omit) }}"
-    remote_ip_prefix: "{{ item.cidr | default(omit) }}"
-    remote_group: "{{ item.group | default(omit) }}"
-    ethertype: "{{ item.ethertype | default(omit) }}"
-  loop: "{{ os_security_group_rules | flatten(levels=1) }}"
+- name: Create Router
+  openstack.cloud.router:
+    name: "{{ os_default_router_name }}"
+    state: present
+    network: "{{ os_default_network_name }}"
+    interfaces:
+      - net: "{{ os_default_int_network_name }}"
+        subnet: "{{ os_default_int_subnet_name }}"
 
 - name: Print keypair name
   ansible.builtin.debug:
@@ -31,8 +35,21 @@
 - name: Create openstack key pair
   openstack.cloud.keypair:
     name: "{{ os_key_pair_name }}"
-    public_key: "{{ key_pair_local.public_key }}"
+#    public_key_file: "{{local_key_pair_path}}{{ local_key_pair_file }}.pub"
+#    public_key: "{{ key_pair_local.public_key }}"
   register: key_pair_response
+
+- name: "Make sure \"{{ local_key_pair_path }}\" exists"
+  ansible.builtin.file:
+    path: "{{ local_key_pair_path }}"
+    state: directory
+
+- name: Persist identity file
+  ansible.builtin.copy:
+    dest: "{{ local_key_pair_path }}{{ local_key_pair_file }}"
+    content: "{{ key_pair_response.keypair.private_key }}"
+    mode: "0600"
+  when: key_pair_response is changed
 
 - debug:
     var: molecule_yml.platforms | flatten(levels=1)
@@ -65,7 +82,7 @@
       'address': "{{ item.access_ipv4 }}",
       'user': "{{ item.metadata.ssh_user }}",
       'port': "{{ item.ssh_port | default(default_ssh_port) }}",
-      'identity_file': "{{ local_key_pair_path }}", }
+      'identity_file': "{{ local_key_pair_path }}{{ local_key_pair_file }}", }
   loop: "{{ server_info }}"
   register: instance_config_dict
 
@@ -77,11 +94,3 @@
   ansible.builtin.copy:
     content: "{{ instance_conf | to_json | from_json | to_yaml }}"
     dest: "{{ molecule_instance_config }}"
-
-- name: Wait for SSH and do reboot if required
-  ansible.builtin.include_tasks: helper/wait_for_ssh.yml
-  loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
-
-#- name: Test connection
-#  ansible.builtin.include_tasks: test_ssh_connection.yml
-#  loop: "{{ lookup('file', molecule_instance_config) | from_yaml }}"
