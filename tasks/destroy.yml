@@ -1,9 +1,4 @@
 ---
-- name: Generate OpenSSH keypair
-  community.crypto.openssh_keypair:
-    path: "{{ local_key_pair_path }}"
-  register: key_pair_local
-
 # molecule_instance_config might not be present, therefore ignore errors and default to an empty config
 - name: Destroy molecule instance(s)
   openstack.cloud.server:
